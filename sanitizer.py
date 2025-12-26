@@ -16,7 +16,7 @@ def sanitize_text(input_path, output_path):
         for line in lines:
             stripped_line = line.strip()
             if len(stripped_line) >= 30 and re.search(r'[က-၏]', stripped_line) and stripped_line.endswith('။'):
-                sanitized_lines.append(stripped_line.replace("“",""))
+                sanitized_lines.append(stripped_line.replace("“","").replace("\"",""))
 
         # Ensure output directory exists
         output_dir = os.path.dirname(output_path)
