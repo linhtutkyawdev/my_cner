@@ -10,18 +10,24 @@ def sanitize_text(input_path, output_path):
     """
     try:
         with open(input_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
+            content = f.read()
+
+        # Replace Burmese line end character with a newline, and remove unwanted characters
+        content = content.replace('။', '။\n').replace("“", "").replace("\"", "")
+
+        lines = content.splitlines()
 
         sanitized_lines = []
         for line in lines:
             stripped_line = line.strip()
-            # Split the line by the Burmese sentence end character "။"
-            sentences = stripped_line.split('။')
-            for sentence in sentences:
-                trimmed_sentence = sentence.strip()
-                if len(trimmed_sentence) >= 30 and re.search(r'[က-၏]', trimmed_sentence):
-                        # Also remove quotes and add the Burmese sentence end character
-                        sanitized_lines.append(trimmed_sentence.replace("“","").replace("\"","") + "။")
+            # Process only non-empty lines with Myanmar characters and of a certain length
+            if len(stripped_line) >= 30 and re.search(r'[က-၏]', stripped_line):
+                # Ensure the line does not end with '။' if it already has it or a '.'
+                if stripped_line.endswith('။') or stripped_line.endswith('.'):
+                    sanitized_lines.append(stripped_line)
+                else:
+                    # This case might not be reached often due to the replace logic, but is a safeguard
+                    sanitized_lines.append(stripped_line)
 
         # Ensure output directory exists
         output_dir = os.path.dirname(output_path)
