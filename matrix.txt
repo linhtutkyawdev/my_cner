@@ -1,3 +1,4 @@
 Raw Data
 4127 files 
 60098 lines
+around 15 hours using the crawler with 10 workers
