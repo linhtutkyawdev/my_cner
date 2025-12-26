@@ -15,8 +15,13 @@ def sanitize_text(input_path, output_path):
         sanitized_lines = []
         for line in lines:
             stripped_line = line.strip()
-            if len(stripped_line) >= 30 and re.search(r'[က-၏]', stripped_line) and stripped_line.endswith('။'):
-                sanitized_lines.append(stripped_line.replace("“","").replace("\"",""))
+            # Split the line by the Burmese sentence end character "။"
+            sentences = stripped_line.split('။')
+            for sentence in sentences:
+                trimmed_sentence = sentence.strip()
+                if len(trimmed_sentence) >= 30 and re.search(r'[က-၏]', trimmed_sentence):
+                        # Also remove quotes and add the Burmese sentence end character
+                        sanitized_lines.append(trimmed_sentence.replace("“","").replace("\"","") + "။")
 
         # Ensure output directory exists
         output_dir = os.path.dirname(output_path)
