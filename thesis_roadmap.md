@@ -8,17 +8,17 @@
 - [X] **Repo Setup**
   - [X] Initialize `beyond_proper_nouns_myanmar_cner` repo.
   - [X] Create `src/prompts.py`: Define the 18 classes clearly in Python strings for the API prompt.
-- [ ] **Data Sourcing**
-  - [ ] Acquire ~50k raw Myanmar sentences (mix of News, Wiki, Legal text if possible).
-  - [ ] Clean text (remove non-Burmese noise).
+- [X] **Data Sourcing**
+  - [X] Acquire ~50k raw Myanmar sentences (mix of News, Wiki, Legal text if possible).
+  - [X] Clean text (remove non-Burmese noise).
 
 ## Phase 1: The Teacher & Synthetic Data (Weeks 2-5)
 
-- [ ] **Prompt Engineering (Critical)**
-  - [ ] Design **Few-Shot Prompt**: Create 3-5 perfect examples showing how to tag complex cases (e.g., distinguishing `LOC` vs `ARTIFACT`).
-  - [ ] Test on 50 diverse sentences. Verify Gemini understands "Role" vs "Person".
-- [ ] **Mass Generation**
-  - [ ] Run `generator.py` in batches.
+- [X] **Prompt Engineering (Critical)**
+  - [X] Design **Few-Shot Prompt**: Create 3-5 perfect examples showing how to tag complex cases (e.g., distinguishing `LOC` vs `ARTIFACT`).
+  - [X] Test on 50 diverse sentences. Verify Gemini understands "Role" vs "Person".**Mass Generation**
+
+- - [ ] Run `generator.py` in batches.
   - [ ] **Validation Step**: Write a script to check JSON validity and discard hallucinations/malformed outputs.
   - [ ] Target: 40k - 50k valid annotated sentences.
 
