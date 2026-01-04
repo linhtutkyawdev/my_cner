@@ -174,13 +174,20 @@ class CNERGenerator:
 
         return corrected_results
 
-    def process_file(self, input_file: str, output_file: str, batch_size: int = 50, progress: Optional[Progress] = None):
+    def process_file(self, input_file: str, output_file: str, batch_size: int = 50, progress: Optional[Progress] = None, skip_sentences: set = set()):
         """
         Reads a file of sentences, processes them in batches, and saves to JSONL.
         """
         try:
             with open(input_file, "r", encoding="utf-8") as f:
-                sentences = [line.strip() for line in f if line.strip()]
+                all_sentences = [line.strip() for line in f if line.strip()]
+                
+            if skip_sentences:
+                sentences = [s for s in all_sentences if s not in skip_sentences]
+                console.log(f"Skipping {len(all_sentences) - len(sentences)} already processed sentences.")
+            else:
+                sentences = all_sentences
+
         except FileNotFoundError:
             console.log(f"[bold red]Input file not found: {input_file}[/bold red]")
             return
@@ -242,21 +249,49 @@ class CNERGenerator:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate CNER annotations using the Gemini API.")
+    parser.add_argument("input_file", help="Path to the input text file (one sentence per line).")
+    parser.add_argument("output_file", help="Path to the output JSONL file.")
+    parser.add_argument("--batch_size", type=int, default=50, help="Number of sentences to process in each batch.")
+    parser.add_argument("--model_name", type=str, default="gemini-2.5-flash", help="The Gemini model to use.")
+    args = parser.parse_args()
+
     if not os.environ.get("GEMINI_API_KEY"):
-        console.log("[bold red]Please set GEMINI_API_KEY environment variable.[/bold red]")
+        console.log("[bold red]Please set the GEMINI_API_KEY environment variable.[/bold red]")
     else:
-        generator = CNERGenerator()
-        test_file = "test_sentences.txt"
-        if not os.path.exists(test_file):
-            with open(test_file, "w", encoding="utf-8") as f:
-                f.write("ဗိုလ်ချုပ်အောင်ဆန်း သည် မြန်မာနိုင်ငံ ၏ လွတ်လပ်ရေးဖခင် ဖြစ်သည်။\n")
-                f.write("၂၀၂၃ ခုနှစ် တွင် ရွှေ ဈေးနှုန်း မြင့်တက် ခဲ့သည်။\n")
-                f.write("this is not a Burmese sentence.\n")
-                f.write("Short\n")
+        # Ensure the output directory exists
+        output_dir = os.path.dirname(args.output_file)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            console.log(f"Created output directory: {output_dir}")
+
+        # --- Resume Logic ---
+        processed_sentences = set()
+        if os.path.exists(args.output_file):
+            try:
+                with open(args.output_file, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        try:
+                            data = json.loads(line)
+                            if 'text' in data:
+                                processed_sentences.add(data['text'])
+                        except json.JSONDecodeError:
+                            continue # Ignore corrupted lines
+                if processed_sentences:
+                    console.log(f"Found {len(processed_sentences)} sentences already processed. Resuming generation.")
+            except Exception as e:
+                console.log(f"[bold red]Could not read existing output file to resume: {e}[/bold red]")
 
 
-        if os.path.exists("test_output.jsonl"):
-            os.remove("test_output.jsonl")
-
+        generator = CNERGenerator(model_name=args.model_name)
+        
         with Progress() as progress:
-            generator.process_file(test_file, "test_output.jsonl", batch_size=2, progress=progress)
+            generator.process_file(
+                args.input_file, 
+                args.output_file, 
+                batch_size=args.batch_size, 
+                progress=progress,
+                skip_sentences=processed_sentences
+            )

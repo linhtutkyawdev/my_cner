@@ -2,3 +2,7 @@ Raw Data
 4127 files 
 60098 lines
 around 15 hours using the crawler with 10 workers
+
+Synthetic Gen 1st Step 
+Run TIme : 1d 1h 12m 25s
+Jsonl : 54040 lines
